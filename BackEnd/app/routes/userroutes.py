@@ -21,7 +21,7 @@ def register_new_user():
 
     new_user = User(email=email, username=username)
     new_user.set_password(password)
-
+          
     db.session.add(new_user)
     db.session.commit()
     return make_response(jsonify(f"User {new_user.email} successfully created"), 201)
@@ -33,6 +33,7 @@ def login_user():
     password = request_body.get('password')
 
     user = User.query.filter(User.email == email).first()
+
     if not user or not user.check_password(password):
         return jsonify({"message": "Invalid credentials"}), 401
 

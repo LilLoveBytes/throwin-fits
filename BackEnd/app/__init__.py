@@ -23,12 +23,20 @@ def create_app(test_config=None):
     jwt = JWTManager(app)
 
     from app.models.user import User
+    from app.models.garment import Garment
+    from app.models.garmentCategory import GarmentCategory 
     
     db.init_app(app)
     migrate.init_app(app, db)
     
     from .routes.userroutes import user_bp
     app.register_blueprint(user_bp)
+
+    from .routes.garmentroutes import garment_bp
+    app.register_blueprint(garment_bp)
+
+    from .routes.garmentCategoryRoutes import garmentCategory_bp
+    app.register_blueprint(garmentCategory_bp)
 
     CORS(app)
     return app

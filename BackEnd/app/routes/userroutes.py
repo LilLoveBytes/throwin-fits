@@ -24,7 +24,7 @@ def register_new_user():
           
     db.session.add(new_user)
     db.session.commit()
-    return make_response(jsonify(f"User {new_user.email} successfully created"), 201)
+    return make_response(jsonify(f"User {new_user.id} successfully created"), 201)
 
 @user_bp.route("/login", methods=["POST"])
 def login_user():

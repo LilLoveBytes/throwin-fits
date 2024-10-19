@@ -22,7 +22,7 @@ def create_app(test_config=None):
 
     jwt = JWTManager(app)
 
-    from app.models.user import User
+    from app.models.user import Users
     from app.models.garment import Garment
     from app.models.garmentCategory import GarmentCategory 
     

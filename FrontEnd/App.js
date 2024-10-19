@@ -7,8 +7,7 @@ import { Home, Login, LoginScreen, Signup } from "./screens";
 import StartLanding from "./screens/StartLanding";
 import SignUpScreen from "./screens/SignUpScreen";
 import SignUp from "./components/SignUp";
-import ClosetScreen from "./screens/ClosetScreen";
-import Closet from "./components/Closet";
+import AddGarmentScreen from "./screens/AddGarmentScreen";
 
 const Stack = createStackNavigator()
 export default function App() {
@@ -36,8 +35,8 @@ export default function App() {
         options={{ title: "ThrowinFits" }}
         />
         <Stack.Screen
-        name="Closet"
-        component={Closet}
+        name="AddGarmentScreen"
+        component={AddGarmentScreen}
         options={{ title: "ThrowinFits" }}
         />
 			</Stack.Navigator>

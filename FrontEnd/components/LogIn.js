@@ -47,7 +47,7 @@ const LogIn = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
         secureTextEntry/>
-        <Button title="Log In" onPress={handleLogIn}/>
+      <Button title="Log In" onPress={handleLogIn}/>
     </SafeAreaView>
   )
 }

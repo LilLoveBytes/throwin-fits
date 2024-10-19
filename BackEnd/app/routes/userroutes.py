@@ -1,6 +1,6 @@
 from app import db
 from flask import Blueprint, jsonify, request, make_response
-from app.models.user import User
+from app.models.user import Users
 from flask_jwt_extended import create_access_token
 
 user_bp = Blueprint("users", __name__, url_prefix="/users")
@@ -14,12 +14,12 @@ def register_new_user():
     email = request_body.get('email')
     password = request_body.get('password')
 
-    existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+    existing_user = Users.query.filter((Users.username == username) | (Users.email == email)).first()
     if existing_user:
         return jsonify({'message': 'Username or email already exists'}), 400
 
 
-    new_user = User(email=email, username=username)
+    new_user = Users(email=email, username=username)
     new_user.set_password(password)
           
     db.session.add(new_user)
@@ -32,7 +32,7 @@ def login_user():
     email = request_body.get('email')
     password = request_body.get('password')
 
-    user = User.query.filter(User.email == email).first()
+    user = Users.query.filter(Users.email == email).first()
 
     if not user or not user.check_password(password):
         return jsonify({"message": "Invalid credentials"}), 401

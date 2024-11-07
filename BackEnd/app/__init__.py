@@ -12,6 +12,7 @@ db = SQLAlchemy()
 migrate = Migrate()
 load_dotenv()
 
+
 def create_app(test_config=None):
     app = Flask(__name__)
 
@@ -19,7 +20,9 @@ def create_app(test_config=None):
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
             "SQLALCHEMY_DATABASE_URI")
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
-
+    app.config['DEBUG'] = True
+    app.config['ENV'] = 'development'  
+    
     jwt = JWTManager(app)
 
     from app.models.user import Users
@@ -39,6 +42,7 @@ def create_app(test_config=None):
     app.register_blueprint(garmentCategory_bp)
 
     CORS(app)
+    print(f"Flask is running in debug mode: {app.debug}")
     return app
 
 if __name__ == "__main__":

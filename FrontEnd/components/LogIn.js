@@ -4,32 +4,25 @@ import { useState } from 'react';
 import React from 'react'
 import COLORS from '../constants/colors';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const LogIn = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  handleLogIn = () => {
+  handleLogIn = async () => {
     const newIp = '10.0.0.6:5000'
-    axios
-    .post(`http://${newIp}/users/login`, { email, password })
-    .then((response) => {
+    try {      
+      const response = await axios.post(`http://${newIp}/users/login`, { email, password });
+      const token = response.data.access_token; 
+      await AsyncStorage.setItem('authToken', token);
       console.log('Log in successful, response:', response.data);
+      console.log('access token:', response.data.access_token);
       navigation.navigate('Home');
-    })
-    .catch((error) => {
-      console.error('Error occurred during log in:', error);
-      console.error(email, password)
 
-      if (error.response) {
-        console.log('Server responded with status:', error.response.status);
-        console.log('Response data:', error.response.data);
-      } else if (error.request) {
-        console.log('No response received. Request:', error.request);
-      } else {
-        console.log('Error during request setup:', error.message);
-      }
-    })
+    } catch(error) {
+      console.error('Error occurred during log in:', error);
+    }
   }
 
   return (

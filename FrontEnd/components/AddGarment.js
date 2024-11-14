@@ -1,5 +1,5 @@
-import React from "react";
-import { SafeAreaView, View, Text, TouchableOpacity} from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { SafeAreaView, View, Text, TouchableOpacity, Alert } from "react-native";
 // import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
@@ -7,86 +7,108 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const AddGarment = ({ navigation }) => {
-  const [status, requestPermission] = ImagePicker.useCameraPermissions();
+  const [cameraPermision, requestCameraPermission] = ImagePicker.useCameraPermissions();
+  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [selectedUri, setSelectedUri] = useState(null)
 
-  selectPhotoFromCamera = async () => {
-    if (status.granted === false) {
-      const permissionRequest = await requestPermission();
-      if (permissionRequest.granted === false) {
-        alert('Camera access has not been granted')
+  const handleCameraAccess = useCallback(async () => { 
+    if(!cameraPermision?.granted) {
+      const { granted } = await requestCameraPermission();
+      if (!granted) {
+        Alert.alert('Camera access was not granted.');
         return;
       }
-    }
-    const result = await ImagePicker.launchCameraAsync({
+    } 
+    openImagePicker(ImagePicker.launchCameraAsync);
+  }, [cameraPermision, requestCameraPermission]);
+
+  const handleAlbumAccess = useCallback ( () => {
+    openImagePicker(ImagePicker.launchImageLibraryAsync);
+  }, []
+  );
+
+  const openImagePicker = async (launchFunction) => {
+    const result = await launchFunction({
       mediaTypes: ImagePicker.MediaTypeOptions.Images, 
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     })
     if (!result.canceled) {
-      garment_image = result.assets[0]
-     //  console.log(garment_image.uri)
-      savePhotoToGarments(garment_image.uri)
-    }
+      setSelectedUri(result.assets[0].uri);
+      promptCategorySelect();
+    };
   }
 
-  selectPhotoFromAlbum = async () => {
-    if (status.granted === false) {
-      const permissionRequest = await requestPermission();
-      if (permissionRequest.granted === false) {
-        alert('Camera access has not been granted')
-        return;
-      }
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4,3],
-      quality: 1,
-    })
-    if (!result.canceled) {
-      garment_image = result.assets[0]
-      // console.log(garment_image, garment_image.uri)
-      savePhotoToGarments(garment_image.uri)
-    }
+  const promptCategorySelect = useCallback(() => {
+    Alert.alert('Select a category for this garment', 
+      [
+        { text: "Tops", onPress: () => setSelectedCategory("Tops")},
+        { text: "Bottoms", onPress: () => setSelectedCategory("Bottoms")},
+        { text: "Dresses", onPress: () => setSelectedCategory("Dresses")},
+        { text: "Accessories", onPress: () => setSelectedCategory("Accessories")},
+        { text: "Shoes", onPress: () => setSelectedCategory("Shoes")},
+        { text: "Cancel", style: "cancel"},
+      ]
+    );
+  }, []);
 
-  }
-
+// Should category selection happen during selecting from camera 
+// or during save or its own method to implement in select or save methods
   /* 
-  editPhoto = () => {
+  const editPhoto = async (image) => {
+    const editedPhoto = await ImageManipulator.manipulateAsync(
+      image, 
+      [ 
+        {rotate: rotation },
+      ]
+    )
+
   }
   */
+  const confirmSave = useCallback(() => {
+    Alert.alert(
+      "Confirm Save",
+      `Save this garment in ${selectedCategory} category?`,
+      [
+        { text: "Cancel", style: "cancel" }, 
+        { text: "Save", onPress: savePhotoToGarments },
+      ]
+    );
+  }, [selectedCategory, savePhotoToGarments]);
 
-  savePhotoToGarments = async (result) => {
-    const newIp = '10.0.0.6:5000'
-    let formData = new FormData();
-    formData.append('image', {
-      uri: result, 
+  savePhotoToGarments = useCallback(async () => {
+    if (!selectedCategory || !selectedUri) return; 
+
+    const formData = new FormData();
+    formData.append('imagee', {
+      uri: selectedUri,
       name: 'photo', //ToDo: get photo name
-      type: 'image/jpeg' //ToDo: get mime type
-    });
-    formData.append('uri', result)
-    formData.append('category', 'Tops')
-    console.log('savePhoto response', result)
+      type: 'image/jpeg' //ToDo: geet mime type
+    })
+    formData.append("category", selectedCategory)
 
-  
     try {
       const token = await AsyncStorage.getItem('authToken')
-      const response = await axios.post(`http://${newIp}/garments`, formData, { 
+      const response = await axios.post("http://10.0.0.6:5000/garments", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data', 
+          'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,
-        }, 
+        },
       });
-        console.log('Photo saved, response:', response.data);
-        navigation.navigate('AddGarmentScreen');
+        console.log('Photo saved with respsonse:', response.data)
+        navigation.navigate('AddGarmentScreen'); //ToDo: navigate to edits screen
     } catch (error) {
-      console.error('Error trying to save photo', error);
-     // alert('Error uploading photo')
+      console.error('Error saving photo', error)
     }
-  }
-  
 
+    }, [selectedCategory, selectedUri, navigation]);
+
+    useEffect(() => {
+      if (selectedCategory) {
+        confirmSave();
+      };
+    }, [selectedCategory, confirmSave]);
 
   return (
       <SafeAreaView>

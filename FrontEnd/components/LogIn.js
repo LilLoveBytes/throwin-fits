@@ -11,7 +11,8 @@ const LogIn = ({ navigation }) => {
   const [password, setPassword] = useState('');
 
   handleLogIn = async () => {
-    const newIp = '10.0.0.6:5000'
+  const newIp = '10.0.0.6:5000'
+    // const newIp = '10.0.0.7:5000'
     try {      
       const response = await axios.post(`http://${newIp}/users/login`, { email, password });
       const token = response.data.access_token; 
